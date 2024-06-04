@@ -32,7 +32,7 @@ class Bird(Agent):
         a,c,s = self.config.weights()
         mass = self.config.mass
         # Calculating the Allignment 
-        allignment = self.pos - self.average_velocity()
+        allignment = self.move - self.average_velocity()
         # Calculating the Seperation
         separation = self.average_distance()
         # Calculating the Cohesion
@@ -47,19 +47,27 @@ class Bird(Agent):
 
     def average_velocity(self):
         agents_velocity = list(self.in_proximity_accuracy())
-        agents_total_velocity = sum(agent.move for agent, _ in agents_velocity)
-        return agents_total_velocity/ len(agents_velocity)
+        if len(agents_velocity) > 0:
+            agents_total_velocity = sum(agent.move for agent, _ in agents_velocity)
+            return agents_total_velocity/ len(agents_velocity)
+        else:
+            return (1,1)
     
     def average_distance(self):
         agents = list(self.in_proximity_accuracy())
-        agents_distance = sum(dist for agent, dist in agents)
-        return agents_distance/ len(agents)
-    
+        if len(agents) > 0:
+            agents_distance = sum(dist for agent, dist in agents)
+            return agents_distance/ len(agents)
+        else:
+            return 0
     def find_cohesion_force(self):
         agents = list(self.in_proximity_accuracy())
-        average_position = sum(agent.pos for agent, _ in agents) / len(agents)
-        cohesion_force = average_position - self.pos
-        return cohesion_force
+        if len(agents) > 0:
+            average_position = sum(agent.pos for agent, _ in agents) / len(agents)
+            cohesion_force = average_position - self.pos
+            return cohesion_force
+        else:
+            return self.pos
 
 
     def get_allignment_weight(self)->float:
@@ -121,6 +129,6 @@ class FlockingLive(Simulation):
             seed=1,
         )
     )
-    .batch_spawn_agents(50, Bird, images=["images/bird.png"])
+    .batch_spawn_agents(50, Bird, images=["D:/year 2/PCI/Assignment_0/Assignment_0/Assignment0/images/bird.png"])
     .run()
 )

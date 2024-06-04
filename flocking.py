@@ -12,7 +12,7 @@ class FlockingConfig(Config):
     alignment_weight: float = 0.5
     cohesion_weight: float = 0.5
     separation_weight: float = 0.5
-
+    max_velocity:float = 10
     # These should be left as is.
     delta_time: float = 0.5                                   # To learn more https://gafferongames.com/post/integration_basics/ 
     mass: int = 20                                            
@@ -32,13 +32,17 @@ class Bird(Agent):
         a,c,s = self.config.weights()
         mass = self.config.mass
         # Calculating the Allignment 
-        self.allignment = self.pos - self.average_velocity()
+        allignment = self.pos - self.average_velocity()
         # Calculating the Seperation
-        self.separation = self.average_distance()
+        separation = self.average_distance()
         # Calculating the Cohesion
-        self.cohesion = self.find_cohesion_force() - self.pos
+        cohesion = self.find_cohesion_force() - self.pos
         # Calculating the Ftotal
-        self.ftotal = (a*self.allignment) + (c*self.cohesion) + (s*self.separation) / mass
+        ftotal = (a*allignment) + (c*cohesion) + (s*separation) / mass
+        # Updating the move 
+        self.move += ftotal 
+        self.move = min(self.move, self.config.max_velocity) * self.move.normalize()
+        self.pos = self.pos + (self.move*self.config.delta_time) 
 
 
     def average_velocity(self):

@@ -30,6 +30,7 @@ class Bird(Agent):
         #YOUR CODE HERE -----------
         # Retrieving the weights 
         a,c,s = self.config.weights()
+        mass = self.config.mass
         # Calculating the Allignment 
         self.allignment = self.pos - self.average_velocity()
         # Calculating the Seperation
@@ -37,7 +38,7 @@ class Bird(Agent):
         # Calculating the Cohesion
         self.cohesion = self.find_cohesion_force() - self.pos
         # Calculating the Ftotal
-        self.ftotal = (a*self.allignment) + (c*self.cohesion) + (s*self.separation)
+        self.ftotal = (a*self.allignment) + (c*self.cohesion) + (s*self.separation) / mass
 
 
     def average_velocity(self):

@@ -12,7 +12,8 @@ class FlockingConfig(Config):
     alignment_weight: float = 0.5
     cohesion_weight: float = 0.5
     separation_weight: float = 0.5
-    max_velocity:float = 10
+    initial_velocity = Vector2(0,1)
+    max_velocity = Vector2(1,0)
     # These should be left as is.
     delta_time: float = 0.5                                   # To learn more https://gafferongames.com/post/integration_basics/ 
     mass: int = 20                                            
@@ -23,51 +24,78 @@ class FlockingConfig(Config):
 
 class Bird(Agent):
     config: FlockingConfig
-
+    
     def change_position(self):
+        self.move = self.config.initial_velocity
         # Pac-man-style teleport to the other end of the screen when trying to escape
         self.there_is_no_escape()
         #YOUR CODE HERE -----------
         # Retrieving the weights 
         a,c,s = self.config.weights()
         mass = self.config.mass
-        # Calculating the Allignment 
-        allignment = self.move - self.average_velocity()
-        # Calculating the Seperation
-        separation = self.average_distance()
-        # Calculating the Cohesion
-        cohesion = self.find_cohesion_force() - self.pos
         # Calculating the Ftotal
+        agents = list(self.in_proximity_accuracy())
+        agents_total_velocity = Vector2(0,0)
+        average_distance = Vector2(0,0)
+        average_position = Vector2(0,0)
+        
+        for agent, dist in agents:
+            # For the Allignemnt 
+            agents_total_velocity += agent.move
+            # For the Separation
+            average_distance += dist
+            # For the Cohesion
+            average_position += agent.pos
+            average_position = average_position / len(agents)
+            cohesion_force = average_position - self.pos
+        if len(agents) > 0:
+            # For the allignment 
+            average_velocity = agents_total_velocity / len(agents)
+            allignment = average_velocity - self.move
+            # For the Separation 
+            separation = average_distance/ len(agents)
+            # For the Cohesion
+            cohesion = cohesion_force - self.move
+
+        else:
+            # For the allignment 
+            allignment = Vector2(0,0)
+            # For separation 
+            separation = Vector2(0)
+            # For the Cohesion
+            cohesion = self.move
+
         ftotal = (a*allignment) + (c*cohesion) + (s*separation) / mass
         # Updating the move 
-        self.move += ftotal 
-        self.move = min(self.move, self.config.max_velocity) * self.move.normalize()
-        self.pos = self.pos + (self.move*self.config.delta_time) 
-
-
-    def average_velocity(self):
-        agents_velocity = list(self.in_proximity_accuracy())
-        if len(agents_velocity) > 0:
-            agents_total_velocity = sum(agent.move for agent, _ in agents_velocity)
-            return agents_total_velocity/ len(agents_velocity)
-        else:
-            return (1,1)
+        self.move = self.move + ftotal 
+        if Vector2.length(self.move) < Vector2.length(self.config.max_velocity):
+            self.move = self.config.max_velocity.length() * self.move.normalize()
+        elif Vector2.length(self.move) > Vector2.length(self.config.max_velocity):
+            self.move = self.config.max_velocity.length() * self.move.normalize()  
+        self.pos = self.pos + Vector2(self.move*self.config.delta_time) 
+    # def average_velocity(self):
+    #     agents_velocity = list(self.in_proximity_accuracy())
+    #     if len(agents_velocity) > 0:
+    #         agents_total_velocity = Vector2(sum(Vector2(agent.move) for agent, _ in agents_velocity))
+    #         return agents_total_velocity/ len(agents_velocity)
+    #     else:
+    #         return Vector2(0,0)
     
-    def average_distance(self):
-        agents = list(self.in_proximity_accuracy())
-        if len(agents) > 0:
-            agents_distance = sum(dist for agent, dist in agents)
-            return agents_distance/ len(agents)
-        else:
-            return 0
-    def find_cohesion_force(self):
-        agents = list(self.in_proximity_accuracy())
-        if len(agents) > 0:
-            average_position = sum(agent.pos for agent, _ in agents) / len(agents)
-            cohesion_force = average_position - self.pos
-            return cohesion_force
-        else:
-            return self.pos
+    # def average_distance(self):
+    #     agents = list(self.in_proximity_accuracy())
+    #     if len(agents) > 0:
+    #         agents_distance = sum(Vector2(dist) for agent, dist in agents)
+    #         return agents_distance/ len(agents)
+    #     else:
+    #         return 0
+    # def find_cohesion_force(self):
+    #     agents = list(self.in_proximity_accuracy())
+    #     if len(agents) > 0:
+    #         average_position = sum(Vector2(agent.pos) for agent, _ in agents) / len(agents)
+    #         cohesion_force = average_position - self.pos
+    #         return cohesion_force
+    #     else:
+    #         return self.pos
 
         #END CODE -----------------
 

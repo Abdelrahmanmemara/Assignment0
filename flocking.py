@@ -10,10 +10,10 @@ from vi.config import Config, dataclass, deserialize
 class FlockingConfig(Config):
     # You can change these for different starting weights
     alignment_weight: float = 0.5
-    cohesion_weight: float = 0.5
+    cohesion_weight: float = 0.1
     separation_weight: float = 0.5
-    initial_velocity = Vector2(0,1)
-    max_velocity = Vector2(1,0)
+    initial_velocity = Vector2(0,0)
+    max_velocity = Vector2(1,1)
     # These should be left as is.
     delta_time: float = 0.5                                   # To learn more https://gafferongames.com/post/integration_basics/ 
     mass: int = 20                                            
@@ -43,7 +43,7 @@ class Bird(Agent):
             # For the Allignemnt 
             agents_total_velocity += agent.move
             # For the Separation
-            average_distance += dist
+            average_distance += Vector2(dist)
             # For the Cohesion
             average_position += agent.pos
             average_position = average_position / len(agents)
@@ -63,7 +63,7 @@ class Bird(Agent):
             # For separation 
             separation = Vector2(0)
             # For the Cohesion
-            cohesion = self.move
+            cohesion = Vector2(1,1)
 
         ftotal = (a*allignment) + (c*cohesion) + (s*separation) / mass
         # Updating the move 

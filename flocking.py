@@ -69,16 +69,6 @@ class Bird(Agent):
         else:
             return self.pos
 
-
-    def get_allignment_weight(self)->float:
-        return self.config.allignment_weight
-    
-    def get_cohesion_weight(self)->float:
-        return self.config.cohesion_weight
-    
-    def get_separation_weight(self)->float:
-        return self.config.separation_weight
-
         #END CODE -----------------
 
 
